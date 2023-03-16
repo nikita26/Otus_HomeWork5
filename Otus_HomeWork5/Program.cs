@@ -2,15 +2,12 @@
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Reflection;
-using Newtonsoft.Json;
 
 var f = new F().Get();
-
-
 var timer = new Stopwatch();
 
+//Самописный сериализатор
 timer.Start();
 for (var i = 0; i < 100000; i++)
 {
@@ -18,9 +15,11 @@ for (var i = 0; i < 100000; i++)
     var obj = CSV2Obj<F>(csv);
 }
 timer.Stop();
-Console.WriteLine($"CSV time:{timer.ElapsedMilliseconds} ms {Obj2CSV(f)}");
+var time1 = timer.ElapsedMilliseconds;
+Console.WriteLine($"CSV time:{time1} ms {Obj2CSV(f)}");
 
 
+//Newtonsoft json сериализатор
 timer.Start();
 for (var i = 0; i < 100000; i++)
 {
@@ -28,7 +27,14 @@ for (var i = 0; i < 100000; i++)
      var obj = JsonConvert.DeserializeObject<F>(json);
 }
 timer.Stop();
-Console.WriteLine($"json time:{timer.ElapsedMilliseconds} ms {JsonConvert.SerializeObject(f)}");
+var time2 = timer.ElapsedMilliseconds;
+Console.WriteLine($"json time:{time2} ms {JsonConvert.SerializeObject(f)}");
+
+if(time1 > time2)
+    Console.WriteLine($"json быстрее чем CSV на {time1-time2} ms");
+else
+    Console.WriteLine($"CSV быстрее чем json на {time2 - time1} ms");
+
 
 
 //Объект в CSV строку
