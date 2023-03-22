@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using Otus_HomeWork5.CSV;
 
 var f = new F().Get();
 var timer = new Stopwatch();
@@ -11,12 +12,12 @@ var timer = new Stopwatch();
 timer.Start();
 for (var i = 0; i < 100000; i++)
 {
-    var csv = Obj2CSV(f);
-    var obj = CSV2Obj<F>(csv);
+    var csv = CSVConver.SerializeObject(f);
+    var obj = CSVConver.DeserializeObject<F>(csv);
 }
 timer.Stop();
 var time1 = timer.ElapsedMilliseconds;
-Console.WriteLine($"CSV time:{time1} ms {Obj2CSV(f)}");
+Console.WriteLine($"CSV time:{time1} ms {CSVConver.SerializeObject(f)}");
 
 
 //Newtonsoft json сериализатор
@@ -37,46 +38,6 @@ else
 
 
 
-//Объект в CSV строку
-string Obj2CSV(object obj)
-{
-    List<string> result = new List<string>();
-
-    var type = obj.GetType();
-    var publicProps = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-    foreach (var p in publicProps)
-    {
-        var field = p.Name;
-        var pValue = p.GetValue(obj);
-
-        result.Add($"{p.Name}:{pValue}");
-    }
-    return String.Join(';',result);
-};
-
-//CSV строка в объект
-T CSV2Obj<T>(string str) where T : new()
-{
-    var result = new T();
-    var type = typeof(T);
-
-    var fields = str.Split(';');
-    foreach (var field in fields)
-    {
-        var data = field.Split(":");
-        var prop = type.GetProperty(data[0], BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        if (prop != null)
-        {
-            var t = Type.GetType(prop.PropertyType.FullName);
-            if (t == typeof(double))
-                data[1] = data[1].Replace(',', '.');
-            var value = TypeDescriptor.GetConverter(t).ConvertFromInvariantString(data[1]);
-            prop.SetValue(result, value);
-        }
-    }
-    return result;
-}
 
 public class F
 {
